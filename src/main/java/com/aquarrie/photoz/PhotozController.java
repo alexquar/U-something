@@ -1,8 +1,7 @@
 package com.aquarrie.photoz;
 
 import java.util.Collection;
-import java.util.HashMap;
-import java.util.Map;
+
 import java.util.UUID;
 
 import org.springframework.http.HttpStatus;
@@ -19,22 +18,21 @@ import jakarta.validation.Valid;
 
 @RestController
 public class PhotozController {
-    private Map <String, Photo> db = new HashMap<>() {{
-        put("1", new Photo("1", "photo1.jpg"));
-        put("2", new Photo("2", "photo2.jpg"));
-        put("3", new Photo("3" ,"photo3.jpg"));
-    }};
+    private final PhotozService photozService;
+    public PhotozController(PhotozService photozService) {
+        this.photozService = photozService;
+    }
     @GetMapping("/")
     public String hello() {
         return "Hello, World!";
     }
     @GetMapping("/photoz")
         public Collection<Photo> getPhotos() {
-            return db.values();
+            return photozService.values();
         }
      @GetMapping("/photoz/{id}")
         public Photo getPhoto(@PathVariable String id) {
-            Photo current = db.get(id);
+            Photo current = photozService.get(id);
             if (current == null) {
                 throw new ResponseStatusException(HttpStatus.NOT_FOUND);
             }
@@ -42,7 +40,7 @@ public class PhotozController {
         }
      @DeleteMapping("/photoz/{id}")
         public void deletePhoto(@PathVariable String id) {
-            Photo current = db.remove(id);
+            Photo current = photozService.remove(id);
             if (current == null) {
                 throw new ResponseStatusException(HttpStatus.NOT_FOUND);
             }
@@ -50,12 +48,12 @@ public class PhotozController {
      @PostMapping("/photoz/")
         public Photo create(@RequestBody @Valid Photo photo) {
            photo.setId(UUID.randomUUID().toString());
-           db.put(photo.getId(), photo);
+           photozService.put(photo.getId(), photo);
            return photo;
         }
     @PatchMapping("/photoz/{id}")
         public Photo update(@PathVariable String id, @RequestBody @Valid Photo photo) {
-            Photo current = db.get(id);
+            Photo current = photozService.get(id);
             if (current == null) {
                 throw new ResponseStatusException(HttpStatus.NOT_FOUND);
             }
